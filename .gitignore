@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.env
+*.log
+src/knowledge/*.md
+!src/knowledge/.gitkeep
+__pycache__/
+*.pyc
+data/
+server.md
