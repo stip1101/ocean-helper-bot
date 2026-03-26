@@ -1,3 +1,16 @@
+import subprocess
+import sys
+
+def install_deps():
+    packages = [
+        "requests", "beautifulsoup4", "sentence-transformers",
+        "faiss-cpu", "numpy", "tqdm",
+    ]
+    for pkg in packages:
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "-q", pkg])
+
+install_deps()
+
 import os
 import re
 import json
