@@ -352,6 +352,33 @@ def run_benchmark(index, chunks, device="cpu"):
     return results, avg_score
 
 
+def generate_markdown_files(documents):
+    """Export scraped content as clean markdown files for Vector Store upload."""
+    print(f"\n{'='*50}")
+    print("Generating markdown knowledge base files")
+    print(f"{'='*50}")
+
+    kb_dir = os.path.join(OUTPUT_DIR, "knowledge")
+    os.makedirs(kb_dir, exist_ok=True)
+
+    for doc in documents:
+        header = (
+            f"# {doc['title']}\n"
+            f"Source: {doc['url']}\n"
+            f"Last updated: {doc['scraped_at']}\n\n"
+            f"---\n\n"
+        )
+        content = header + doc["text"]
+        path = os.path.join(kb_dir, f"{doc['name']}.md")
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(content)
+        print(f"  {doc['name']}.md — {len(content)} chars")
+
+    print(f"\n{len(documents)} markdown files written to {kb_dir}")
+    print("Upload these to OpenAI Vector Store via /knowledge refresh or manually")
+    return len(documents)
+
+
 def save_output(filename, data, binary=False):
     os.makedirs(OUTPUT_DIR, exist_ok=True)
     path = os.path.join(OUTPUT_DIR, filename)
@@ -396,7 +423,10 @@ def main():
     # 5. Q&A extraction
     qa_pairs = extract_qa_pairs(documents)
 
-    # 6. Benchmark
+    # 6. Markdown export for Vector Store
+    md_count = generate_markdown_files(documents)
+
+    # 7. Benchmark
     benchmark_results, avg_score = run_benchmark(index, chunks, device)
 
     # Save outputs
@@ -429,6 +459,7 @@ def main():
             "embedding_dim": dim,
             "embeddings_size_mb": round(embeddings.nbytes / (1024 * 1024), 2),
             "qa_pairs": len(qa_pairs),
+            "markdown_files": md_count,
             "avg_search_score": round(avg_score, 4),
         },
         "duration_seconds": round(elapsed, 1),
